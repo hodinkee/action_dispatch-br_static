@@ -1,10 +1,7 @@
-# encoding: utf-8
-require 'rack/mime'
-require 'rack/file'
+# frozen_string_literal: true
 
 require 'action_dispatch/br_railtie' if defined?(Rails)
 require 'action_dispatch/middleware/static'
-require 'action_controller'
 
 module ActionDispatch
   class BrStatic < Static
