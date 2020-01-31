@@ -4,7 +4,7 @@ require 'action_dispatch/br_railtie' if defined?(Rails)
 require 'action_dispatch/middleware/static'
 
 module ActionDispatch
-  class BrStatic < Static
+  class BrFileHandler < FileHandler
     def serve(request)
       path        = request.path_info
       brotli_path = brotli_file_path(path)
@@ -39,6 +39,13 @@ module ActionDispatch
 
     def brotli_encoding_accepted?(request)
       request.accept_encoding.any? { |enc, quality| enc =~ /\bbr\b/i }
+    end
+  end
+
+  class BrStatic < Static
+    def initialize(app, path, index: "index", headers: {})
+      @app = app
+      @file_handler = BrFileHandler.new(path, index: index, headers: headers)
     end
   end
 end
