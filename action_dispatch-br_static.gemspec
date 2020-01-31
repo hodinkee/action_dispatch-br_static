@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |gem|
   gem.name          = 'action_dispatch-br_static'
-  gem.version       = '1.0.0'
+  gem.version       = '1.0.1'
   gem.authors       = ['Bohdan Derevenets', 'Ryan LeFevre']
   gem.email         = ['dbodyas@gmail.com', 'ryan@hodinkee.com']
   gem.description   = 'Serves precompiled *.br files created by asset pipeline or webpack'
