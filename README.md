@@ -6,7 +6,7 @@ precompiler.
 
 If you are using Rails to serve static assets in production, and
 you are using the asset precompiler, then it is probably a good idea to use this
-gem. If you are running on Heroku's Cedar stack, this includes you.
+gem. If you are running on Heroku, this includes you.
 
 ActionDispatch::BrStatic is a better solution that using Rack::Deflater on your
 static assets, because this has the undesirable side effect of recompressing
@@ -14,17 +14,21 @@ assets that are already compressed, such as images. It is still a good idea to
 use Rack::Deflater for your app responses, but it should be positioned after
 Rack::BrStatic in the middleware stack.
 
+**This fork has been modified to support Rails 5**
+
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'action_dispatch-br_static', github: 'bodya-dnepr/action_dispatch-br_static'
+    group :production do
+      gem 'action_dispatch-br_static', github: 'hodinkee/action_dispatch-br_static'
+    end
 
 Add this to application.rb:
 
     # The railtie initializer will look for ActionDispatch::Static, and swap it
     # with ActionDispatch::BrStatic
-    config.serve_static_files = true
+    config.public_file_server.enabled = true
 
     # This isn't required, but is generally a good idea.
     config.static_cache_control = "public, max-age=#{1.month.to_i}"

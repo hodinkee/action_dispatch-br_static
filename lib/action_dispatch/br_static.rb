@@ -8,33 +8,40 @@ require 'action_controller'
 
 module ActionDispatch
   class BrStatic < Static
-    def call(env)
-      return super unless %w(GET HEAD).include? env['REQUEST_METHOD']
-      path = env['PATH_INFO'].chomp('/')
-      return super unless @file_handler.match?(path)
+    def serve(request)
+      path        = request.path_info
+      brotli_path = brotli_file_path(path)
 
-      compressed_path = "#{path}.br"
+      return super if !brotli_path || !brotli_encoding_accepted?(request)
 
-      compressed_exists = @file_handler.match?(compressed_path)
-      wants_compressed  = env['HTTP_ACCEPT_ENCODING'] =~ /\bbr\b/
-
-      if wants_compressed && compressed_exists
-        env['PATH_INFO'] = compressed_path
+      request.path_info = brotli_path
+      status, headers, body = @file_server.call(request.env)
+      if status == 304
+        return [status, headers, body]
       end
 
-      status, headers, body = super
+      headers["Content-Encoding"] = "br"
+      headers["Content-Type"]     = content_type(path)
+      headers["Vary"]             = "Accept-Encoding"
 
-      if compressed_exists
-        headers['Vary'] = 'Accept-Encoding'
+      return [status, headers, body]
+    ensure
+      request.path_info = path
+    end
 
-        if wants_compressed
-          headers['Content-Encoding'] = 'br'
-          mime = Rack::Mime.mime_type(::File.extname(path), 'text/plain')
-          headers['Content-Type'] = mime if mime
-        end
+    private
+
+    def brotli_file_path(path)
+      brotli_path = "#{path}.br"
+      if File.exist?(File.join(@root, ::Rack::Utils.unescape_path(brotli_path).b))
+        brotli_path.b
+      else
+        false
       end
+    end
 
-      [status, headers, body]
+    def brotli_encoding_accepted?(request)
+      request.accept_encoding.any? { |enc, quality| enc =~ /\bbr\b/i }
     end
   end
 end
